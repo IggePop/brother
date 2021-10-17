@@ -6,6 +6,7 @@ from typing import Final
 ATTR_CHARSET: Final[str] = "charset"
 ATTR_COUNTERS: Final[str] = "counters"
 ATTR_FIRMWARE: Final[str] = "firmware"
+ATTR_MAC: Final[str] = "mac"
 ATTR_MAINTENANCE: Final[str] = "maintenance"
 ATTR_MODEL: Final[str] = "model"
 ATTR_NEXTCARE: Final[str] = "nextcare"
@@ -86,6 +87,7 @@ KINDS: Final[list[str]] = ["ink", "laser"]
 OIDS_WITHOUT_COUNTERS: Final[dict[str, str]] = {
     ATTR_CHARSET: "1.3.6.1.2.1.43.7.1.1.4.1.1",
     ATTR_FIRMWARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.17.0",
+    ATTR_MAC: "1.3.6.1.4.1.11.2.4.3.10.8.0",
     ATTR_MAINTENANCE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.8.0",
     ATTR_MODEL: "1.3.6.1.4.1.2435.2.3.9.1.1.7.0",
     ATTR_NEXTCARE: "1.3.6.1.4.1.2435.2.3.9.4.2.1.5.5.11.0",

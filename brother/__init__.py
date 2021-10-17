@@ -19,6 +19,7 @@ from .const import (
     ATTR_CHARSET,
     ATTR_COUNTERS,
     ATTR_FIRMWARE,
+    ATTR_MAC,
     ATTR_MAINTENANCE,
     ATTR_MODEL,
     ATTR_NEXTCARE,
@@ -81,9 +82,10 @@ class Brother:
 
         self._legacy = False
 
-        self.firmware = None
-        self.model = None
-        self.serial = None
+        self._firmware: str | None = None
+        self._model: str | None = None
+        self._serial: str | None = None
+        self._mac: str | None = None
         self._host = host
         self._port = port
         self._last_uptime: datetime | None = None
@@ -103,21 +105,17 @@ class Brother:
 
         data = DictToObj({})
 
-        try:
-            self.model = re.search(  # type: ignore[union-attr]
+        with suppress(TypeError, AttributeError):
+            self._model = re.search(  # type: ignore[union-attr]
                 REGEX_MODEL_PATTERN, raw_data[OIDS[ATTR_MODEL]]
             ).group("model")
-            data[ATTR_MODEL] = self.model
-            self.serial = raw_data[OIDS[ATTR_SERIAL]]
-            data[ATTR_SERIAL] = self.serial
-        except (TypeError, AttributeError) as err:
-            raise UnsupportedModel(
-                "It seems that this printer model is not supported"
-            ) from err
-        try:
-            self.firmware = raw_data[OIDS[ATTR_FIRMWARE]]
-            data[ATTR_FIRMWARE] = self.firmware
+            self._serial = raw_data[OIDS[ATTR_SERIAL]]
+            self._mac = raw_data[OIDS[ATTR_MAC]][-12:].lower()
+            self._firmware = raw_data[OIDS[ATTR_FIRMWARE]]
 
+        if not bool(self._mac or self._serial):
+            raise UnsupportedModel("It seems that this printer model is not supported")
+        try:
             # If no charset data from the printer use roman8 as default
             if raw_data.get(OIDS[ATTR_CHARSET]) in CHARSET_MAP:
                 charset = CHARSET_MAP[raw_data[OIDS[ATTR_CHARSET]]]
@@ -216,6 +214,26 @@ class Brother:
 
         _LOGGER.debug("Data: %s", data)
         return data
+
+    @property
+    def mac(self) -> str | None:
+        """Return the MAC address of the printer."""
+        return self._mac
+
+    @property
+    def serial(self) -> str | None:
+        """Return the serial number of the printer."""
+        return self._serial
+
+    @property
+    def firmware(self) -> str | None:
+        """Return the firmware version of the printer."""
+        return self._firmware
+
+    @property
+    def model(self) -> str | None:
+        """Return the model of the printer."""
+        return self._model
 
     def shutdown(self) -> None:
         """Unconfigure SNMP engine."""
